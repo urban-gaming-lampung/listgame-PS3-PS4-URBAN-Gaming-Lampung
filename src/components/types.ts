@@ -14,6 +14,5 @@ export type Game = {
   youtubeQuery: string;
   description: string;
 
-  // opsional: bisa isi link langsung ke video YouTube
   gameplayYoutubeUrl?: string;
 };

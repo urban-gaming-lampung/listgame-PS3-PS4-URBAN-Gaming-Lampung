@@ -1,8 +1,7 @@
-import React from 'react';
-import { useThemeContext } from '../ThemeContext';
-import { MapPin, ExternalLink, Megaphone, ShoppingCart, X } from "lucide-react";
+import React from "react";
+import { Megaphone, ShoppingCart, X } from "lucide-react";
 
-export type TabKey = "PS3 CFW/HEN" | "PS4 HEN" | "PS5 HEN" | "Nintendo Switch" | "PC" | "Produk Lainnya";
+export type TabKey = "PS3" | "PS4" | "PS5" | "Produk Lainnya";
 
 export type SortKey =
   | "abjad"
@@ -25,6 +24,7 @@ type TabsProps = {
   cartCount: number;
   onChatAdmin: () => void; // masih ada biar ga ngerusak parent (ga dipakai)
   onOpenCart: () => void;
+  onOpenAnnouncement: () => void;
 };
 
 const WhatsAppIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
@@ -193,44 +193,40 @@ function TabButton({
   label,
   isActive,
   onClick,
-  activeTab, // Dipertahankan props ini untuk cek apakah TAB INI sedang aktif secara logik (opsional, tapi udah ada)
   className = "",
 }: {
   label: TabKey;
   isActive: boolean;
   onClick: () => void;
-  activeTab: TabKey;
   className?: string;
 }) {
-  const theme = useThemeContext();
-
   return (
     <button
       type="button"
       onClick={onClick}
       className={`
-        relative flex items-center justify-center
-        px-1 py-2 sm:py-2.5
-        text-[10px] min-[360px]:text-[10.5px] sm:text-xs md:text-sm font-semibold leading-tight
-        rounded-xl whitespace-nowrap overflow-hidden text-ellipsis
-        hover:whitespace-normal hover:z-10 bg-clip-text
-        transition-all duration-300 ease-out
+        relative
+        px-3 py-2
+        text-xs md:text-sm font-semibold
+        rounded-xl whitespace-nowrap
+        transition
         motion-reduce:transition-none
-        ${isActive
-          ? theme.bgWhiteText
-          : "text-gray-500 hover:text-gray-900 hover:bg-white/60"
+        ${
+          isActive
+            ? "bg-white text-gray-900 shadow-sm ring-1 ring-gray-200/70"
+            : "text-gray-600 hover:text-gray-900 hover:bg-white/70"
         }
-        active:scale-[0.98] motion-reduce:active:transform-none
-        focus:outline-none focus-visible:ring-2 ${theme.ringLight} focus-visible:ring-offset-1
+        active:scale-[0.99] motion-reduce:active:transform-none
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 focus-visible:ring-offset-2
         ${className}
       `}
     >
-      <span className="truncate">{label}</span>
+      {label}
     </button>
   );
 }
 
-function Tabs({
+export default function Tabs({
   tabs,
   active,
   onChange,
@@ -244,20 +240,14 @@ function Tabs({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onChatAdmin: _onChatAdmin,
   onOpenCart,
+  onOpenAnnouncement,
 }: TabsProps) {
   const placeholder = active === "Produk Lainnya" ? "Cari produk…" : "Cari game…";
 
   // urutin tab biar konsisten
-  const order: TabKey[] = ["PS3 CFW/HEN", "PS4 HEN", "PS5 HEN", "Nintendo Switch", "PC", "Produk Lainnya"];
+  const order: TabKey[] = ["PS3", "PS4", "PS5", "Produk Lainnya"];
   const tabSet = new Set(tabs);
   const orderedTabs = order.filter((t) => tabSet.has(t));
-
-  // Split tabs for mobile 2-row layout
-  const row1Order: TabKey[] = ["PS3 CFW/HEN", "PS4 HEN", "PS5 HEN"];
-  const row2Order: TabKey[] = ["Nintendo Switch", "PC", "Produk Lainnya"];
-
-  const row1Tabs = row1Order.filter((t) => tabSet.has(t));
-  const row2Tabs = row2Order.filter((t) => tabSet.has(t));
 
   // ===== WhatsApp settings =====
   const waNumberLocal = "085709647790";
@@ -273,9 +263,9 @@ function Tabs({
 
   return (
     <div className="sticky top-0 z-30">
-      <div className="border-b border-gray-200 bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 shadow-sm transition-all">
-        <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
-          <div className="rounded-2xl border border-gray-100 bg-gray-50/50 overflow-hidden">
+      <div className="border-b border-gray-200/70 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/55 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="rounded-3xl border border-gray-200/70 bg-white/40 backdrop-blur-sm overflow-hidden">
             {/* ================= MOBILE (JANGAN DIUBAH) ================= */}
             <div className="flex flex-col md:hidden">
               {/* Baris atas: Search + ikon */}
@@ -309,51 +299,53 @@ function Tabs({
 
               <div className="h-px bg-gray-200/70" />
 
-              {/* Baris bawah: Tabs 2 Row (mobile) */}
-              <div className="p-2 sm:p-3">
-                <div className="rounded-2xl bg-gray-100/80 p-1 sm:p-1.5 shadow-inner flex flex-col gap-1 sm:gap-1.5 overflow-hidden">
-                  <div className="flex gap-1 sm:gap-1.5 w-full">
-                    {row1Tabs.map((t) => (
+              {/* Baris bawah: Tabs GRID (mobile tetap 3 + 1 bawah) */}
+              <div className="p-3">
+                <div className="rounded-2xl bg-gray-100/80 p-1 shadow-inner">
+                  <div className="grid grid-cols-3 gap-1">
+                    {["PS3", "PS4", "PS5"].map((t) => (
                       <TabButton
                         key={t}
                         label={t as TabKey}
                         isActive={active === (t as TabKey)}
                         onClick={() => onChange(t as TabKey)}
-                        activeTab={active}
-                        className="flex-1 w-0"
+                        className="w-full"
                       />
                     ))}
                   </div>
-                  <div className="flex gap-1 sm:gap-1.5 w-full">
-                    {row2Tabs.map((t) => (
-                      <TabButton
-                        key={t}
-                        label={t as TabKey}
-                        isActive={active === (t as TabKey)}
-                        onClick={() => onChange(t as TabKey)}
-                        activeTab={active}
-                        className="flex-1 w-0"
-                      />
-                    ))}
-                  </div>
+
+                  {orderedTabs.includes("Produk Lainnya") && (
+                    <>
+                      <div className="h-2" />
+                      <div className="grid grid-cols-1 gap-1">
+                        <TabButton
+                          label="Produk Lainnya"
+                          isActive={active === "Produk Lainnya"}
+                          onClick={() => onChange("Produk Lainnya")}
+                          className="w-full"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* ================= DESKTOP (TAB NYATU 4, SEARCH+TOMBOL DI BAWAH) ================= */}
             <div className="hidden md:block p-3">
-              {/* Baris 1: Tabs (satu baris lebar merata) */}
-              <div className="rounded-2xl bg-gray-100/80 p-1.5 shadow-inner flex w-full gap-1.5 overflow-hidden justify-between">
-                {orderedTabs.map((t) => (
-                  <TabButton
-                    key={t}
-                    label={t}
-                    isActive={active === t}
-                    onClick={() => onChange(t)}
-                    activeTab={active}
-                    className="flex-1 w-full flex-grow text-center"
-                  />
-                ))}
+              {/* Baris 1: Tabs (4 nyatu) */}
+              <div className="rounded-2xl bg-gray-100/80 p-1 shadow-inner">
+                <div className="grid grid-cols-4 gap-1">
+                  {orderedTabs.map((t) => (
+                    <TabButton
+                      key={t}
+                      label={t}
+                      isActive={active === t}
+                      onClick={() => onChange(t)}
+                      className="w-full"
+                    />
+                  ))}
+                </div>
               </div>
 
               <div className="h-3" />
@@ -392,179 +384,5 @@ function Tabs({
         </div>
       </div>
     </div>
-  );
-}
-
-/* ================== HEADER (ASLI TANPA DIUBAH) ================== */
-function HeaderBar({
-  store,
-  cartCount, // tetap dipertahankan agar kompatibel, tidak dipakai
-  onCartClick, // tetap dipertahankan agar kompatibel, tidak dipakai
-  activeTab,
-}: {
-  store: { name: string; address: string; mapsUrl: string };
-  cartCount: number;
-  onCartClick: () => void;
-  activeTab: TabKey;
-}) {
-  const theme = useThemeContext();
-
-  return (
-    <header
-      className="
-        bg-white
-        border-b border-gray-100
-      "
-      role="banner"
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="py-4 md:py-5">
-          <div className="flex items-center justify-between gap-4 md:gap-6">
-            {/* Brand */}
-            <div className="min-w-0">
-              <div className="flex items-center gap-3 md:gap-4">
-                <RentalLogo />
-
-                <div className="min-w-0">
-                  {/* MOBILE: simpel */}
-                  <h1 className="text-xl font-extrabold tracking-tight text-gray-900 leading-tight md:hidden">
-                    List Isi Game
-                  </h1>
-
-                  {/* DESKTOP/TABLET: tetap lengkap */}
-                  <h1 className="hidden md:block text-2xl font-extrabold tracking-tight text-gray-900 leading-tight">
-                    List Isi Game{' '}
-                    <span className="text-gray-600 font-semibold">
-                      {store.name}
-                    </span>
-                  </h1>
-
-                  {/* Alamat hanya tampil md+ */}
-                  <p className="hidden md:flex mt-1 text-sm text-gray-600 items-center flex-wrap">
-                    <span className="leading-relaxed">📍 {store.address}</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* CTA: Maps */}
-            <div className="shrink-0">
-              {/* MOBILE: icon only di pojok kanan */}
-              <a
-                href={store.mapsUrl}
-                target="_blank"
-                rel="noreferrer noopener"
-                aria-label="Buka lokasi di Google Maps (tab baru)"
-                className="
-                  md:hidden
-                  inline-flex items-center justify-center
-                  w-11 h-11
-                  rounded-xl
-                  bg-gray-900 text-white
-                  shadow-sm
-                  hover:bg-gray-800
-                  active:scale-[.99]
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white
-                  transition
-                "
-                title="Buka Maps"
-              >
-                <MapPin className="w-5 h-5" aria-hidden="true" />
-              </a>
-
-              {/* DESKTOP/TABLET: tombol seperti sebelumnya */}
-              <a
-                href={store.mapsUrl}
-                target="_blank"
-                rel="noreferrer noopener"
-                aria-label="Buka lokasi di Google Maps (tab baru)"
-                className={`
-                  hidden md:inline-flex items-center justify-center gap-2
-                  rounded-xl px-4 py-2.5
-                  text-sm font-semibold
-                  text-white shadow-sm transition-all duration-300 ease-out group active:scale-[0.98]
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white
-                  ${theme.bgSolid} ${theme.bgSolidHover} ${theme.ringLight}
-                `}
-              >
-                <MapPin className="w-5 h-5" aria-hidden="true" />
-                <span className="whitespace-nowrap">Lihat di Maps</span>
-                <ExternalLink
-                  className="w-4 h-4 opacity-80 transition-transform group-hover:translate-x-[2px] group-hover:-translate-y-[2px]"
-                  aria-hidden="true"
-                />
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function RentalLogo() {
-  return (
-    <div
-      className="
-        shrink-0
-        w-12 h-12 md:w-12 md:h-12
-        rounded-2xl overflow-hidden
-        border border-gray-300 bg-white shadow-sm
-        flex items-center justify-center
-      "
-      aria-label="Logo toko"
-    >
-      <img
-        src="https://i.ibb.co.com/207KDFc7/PLAYBOX.png"
-        alt="Logo"
-        className="w-full h-full object-contain p-1"
-        loading="lazy"
-        decoding="async"
-      />
-    </div>
-  );
-}
-
-/* ================== WRAPPER (HEADER DULU, TABS DI BAWAH) ================== */
-export default function Header(props: {
-  store: { name: string; address: string; mapsUrl: string };
-  cartCount: number;
-  onCartClick: () => void;
-
-  tabs: readonly TabKey[];
-  active: TabKey;
-  onChange: (t: TabKey) => void;
-
-  query: string;
-  setQuery: (q: string) => void;
-
-  sortBy: SortKey;
-  setSortBy: (s: SortKey) => void;
-
-  onChatAdmin: () => void;
-  onOpenCart: () => void;
-}) {
-  return (
-    <>
-      <HeaderBar
-        store={props.store}
-        cartCount={props.cartCount}
-        onCartClick={props.onCartClick}
-        activeTab={props.active}
-      />
-
-      <Tabs
-        tabs={props.tabs}
-        active={props.active}
-        onChange={props.onChange}
-        query={props.query}
-        setQuery={props.setQuery}
-        sortBy={props.sortBy}
-        setSortBy={props.setSortBy}
-        cartCount={props.cartCount}
-        onChatAdmin={props.onChatAdmin}
-        onOpenCart={props.onOpenCart}
-      />
-    </>
   );
 }
